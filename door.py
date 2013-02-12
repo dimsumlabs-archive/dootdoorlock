@@ -2,20 +2,23 @@
 #
 # untested and WIP
 #
+from __future__ import print_function
 import os, subprocess
-import hashlib.sha512 as hashfun
-import time.sleep as sleep
+from hashlib import sha512 as hashfun
+from time import sleep
 b = 'A0B0C0D0E0'
 found = 0
 
 octopus_reader ="/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_\
         Controller_0001-if00-port0"
-doorlock = ""
+doorlock = "/dev/serial/by-id/usb-usb-Prolific_Technology_Inc._USB-Serial_\
+        Controller-if00-port0"
 
 def read_users(fname):
     users, keys = dict(), dict()
     with open(fname) as userfile:
-        for name, key in userfile:
+        for line in userfile:
+	    name, key = line.rsplit(" ", 1)
             users[name] = key
             keys[key] = name
     return users, keys
@@ -40,7 +43,9 @@ def open_door():
 
 if __name__ == "__main__":
     users, keys = read_users("users.txt")
-    while True:
+    print(users,keys)
+    #while True:
+    #	print("blah")
         #with open(octopus_reader) as reader:
         #    for line in reader:
         #        if hashfun(line) in keys
@@ -52,5 +57,3 @@ if __name__ == "__main__":
         #if found == 0:
         #    print("NOT FOUND.")
         #reader.close()
-
-
