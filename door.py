@@ -2,19 +2,12 @@
 #
 # TODO: easily add users
 # 
-# To keep running once the ssh connections terminates: 
-#     nohup ./door.py &
-#
-# Add users:
-# start python shell and execute:
-# 	 import door
-# 	 users, keys = door.read_users("users.txt")
-# 	 door.add_user(users, keys, "Lastname  Firstname", door.read_user())
-# then go beep your card
-# restart ./door.py
+# usage:
+#   to run: ./door.py
+#   to add users: ./door.py add
 #
 from __future__ import print_function
-import re, subprocess, serial, sys
+import os, re, subprocess, serial, signal, sys
 from hashlib import sha256 as hashfun
 from time import sleep
 
@@ -22,15 +15,15 @@ octopus_reader ="/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Co
 doorlock = "/dev/serial/by-id/usb-Prolific_Technology_Inc._USB-Serial_Controller-if00-port0"
 ser = serial.Serial(octopus_reader, 9600)
 userdata = "users.txt"
+pidfile = "/tmp/dootdoorlock.pid"
 
 def read_users(fname):
-    users, keys = dict(), dict()
+    users = dict()
     with open(fname) as userfile:
         for line in userfile:
 	    name, key = line.strip("\n").rsplit(" ", 1)
             users[name] = key
-            keys[key] = name
-    return users, keys
+    return users
 
 def save_users(users):
     with open(userdata, 'w') as userfile:
@@ -38,14 +31,18 @@ def save_users(users):
             print("{0} {1}".format(name, users[name]), file=userfile)
     print("Saved users")
 
-def add_user(users, keys, name, key):
+def add_user():
+    users = read_users(fname)
+    print("Enter name (lastname firstname) of user to add then press enter.")
+    name = raw_input()
+    print("Now scan octopus card.")
+    key = read_user()
     if name in users:
         print("{0} is already in database. To overwrite type: y".format(name))
         if raw_input().lower() != "y":
 	    print("not adding")
             return
     users[name] = key
-    keys[key] = name
     save_users(users)
 
 def open_door():
@@ -56,10 +53,35 @@ def open_door():
 def read_user():
     return hashfun(re.sub("[^0-F]", "", ser.readline())).hexdigest()
 
-if __name__ == "__main__":
-    users, keys = read_users("users.txt")
+def run():
+    users = read_users("users.txt")
     while True:
-	key = read_user()
-	if key in keys:
+        key = read_user()
+    	if key in user.values():
             print("Opening for {0}".format(keys[key]))
-	    open_door()
+            open_door()
+
+def main(argv):
+    if len(argv) == 3:
+        if argv[2] == "add":
+            print("To add user press y followed by enter.")
+            while raw_input() == "y":
+                add_user()
+                print("To add another user press y followed by enter.")
+        else if argv[2] == "run":
+            run()
+
+
+    if os.path.isfile(pidfile):
+        print("Doorlock already running, I'm killing it.")
+        old_pid = int(open(pidfile).read())
+        os.kill(pid, signal.SIGKILL)
+    
+    # nohup prevents the process from dying with the parent shell
+    # couldn't test this yet!
+    p = subprocess.Popen(["nohup", "python", "door.py", "run"])
+    print(p.pid, file=open(pidfile, 'w'))
+    print("Running door.py in background.")
+
+if __name__ == "__main__":
+    main(sys.argv)
