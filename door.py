@@ -2,18 +2,19 @@
 #
 # TODO: easily add users
 # 
-# To run: ./door.py
+# To keep running once the ssh connections terminates: 
+#     nohup ./door.py &
 #
 # Add users:
 # start python shell and execute:
-# 	import door
-# 	users, keys = door.read_users("users.txt")
-# 	door.add_user(users, keys, "Lastname  Firstname", door.read_user())
+# 	 import door
+# 	 users, keys = door.read_users("users.txt")
+# 	 door.add_user(users, keys, "Lastname  Firstname", door.read_user())
 # then go beep your card
 # restart ./door.py
 #
 from __future__ import print_function
-import subprocess, serial, re
+import re, subprocess, serial, sys
 from hashlib import sha256 as hashfun
 from time import sleep
 
