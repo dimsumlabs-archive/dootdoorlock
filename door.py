@@ -1,6 +1,7 @@
 #!/usr/bin/python
 #
-# TODO: easily add users
+# TODO: run as daemon
+#       maybe with http://pypi.python.org/pypi/python-daemon/
 # 
 # usage:
 #   to run: ./door.py
