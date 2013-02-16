@@ -6,7 +6,7 @@
 #
 if [ $1 == "add" ]; then
     ./door.py add
-    zdaemon -d -p ./door.py restart
+    sudo /etc/init.d/doord restart
 else
-    zdaemon -d -p ./door.py $1
+    sudo /etc/init.d/doord $1
 fi
