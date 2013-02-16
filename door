@@ -1,0 +1,12 @@
+#!/bin/bash
+#
+#	usage: ./door {add, start, stop, restart}
+#
+#	turns door.py into a daemon
+#
+if [ $1 == "add" ]; then
+    ./door.py add
+    zdaemon -d -p ./door.py restart
+else
+    zdaemon -d -p ./door.py $1
+fi
