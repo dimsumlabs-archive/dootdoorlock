@@ -1,7 +1,3 @@
-. /etc/rc.d/init.d/functions
-
-. /etc/sysconfig/network
-
 APP_PATH=$HOME/door/dootdoorlock
 PYTHON=/usr/local/bin/python3
 USER=pi
