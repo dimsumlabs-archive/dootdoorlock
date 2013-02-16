@@ -1,0 +1,42 @@
+. /etc/rc.d/init.d/functions
+
+. /etc/sysconfig/network
+
+APP_PATH=$HOME/door/dootdoorlock
+PYTHON=/usr/local/bin/python3
+USER=pi
+APP_NAME=door.py
+
+start() {
+    cd $APP_PATH
+    zdaemon -d -p ./$APP_NAME start
+}
+
+stop() {
+    cd $APP_PATH
+    zdaemon -d -p ./$APP_NAME stop
+}
+
+check_status() {
+    cd $APP_PATH
+    zdaemon -d -p ./$APP_NAME status
+}
+
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  status)
+        check_status
+        ;;
+  restart)
+        stop
+        start
+        ;;
+  *)
+
+esac
+exit 0
