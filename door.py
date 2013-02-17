@@ -51,15 +51,15 @@ def read_user():
     return hashfun(re.sub("[^0-F]", "", ser.readline())).hexdigest()
 
 def run():
-    users = read_users("users.txt")
+    users = read_users()
     while True:
         key = read_user()
-    	if key in user.values():
-            print("Opening for {0}".format(keys[key]))
+    	if key in users.values():
+            print("Opening")
             open_door()
 
 if __name__ == "__main__":
-    if sys.argv[1] == "add":
+    if len(sys.argv) > 1:
 	add_user()
     else:
 	run()
