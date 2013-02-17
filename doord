@@ -1,6 +1,5 @@
-APP_PATH=$HOME/door/dootdoorlock
+APP_PATH=/home/pi/door/dootdoorlock
 PYTHON=/usr/local/bin/python3
-USER=pi
 APP_NAME=door.py
 
 start() {
