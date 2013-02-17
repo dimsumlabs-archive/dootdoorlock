@@ -9,6 +9,7 @@ To enable at boot:
 ```
 sudo update-rc.d doord defaults
 ```
+For some reason this does not work. Neither does starting in ```/etc/rc.local```.
 
 daemon control:
 ```
