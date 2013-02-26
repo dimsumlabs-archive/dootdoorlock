@@ -5,8 +5,9 @@
 #	turns door.py into a daemon
 #
 if [ $1 == "add" ]; then
+    sudo /etc/init.d/doord stop
     ./door.py add
-    sudo /etc/init.d/doord restart
+    sudo /etc/init.d/doord start
 else
     sudo /etc/init.d/doord $1
 fi
