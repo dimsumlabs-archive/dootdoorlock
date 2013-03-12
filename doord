@@ -13,21 +13,21 @@ APP_PATH=/home/pi/door/dootdoorlock
 PYTHON=/usr/local/bin/python3
 APP_NAME=door.py
 
-PATH=/usr/local/bin
+ZD=/usr/local/bin/zdaemon
 
 start() {
     cd $APP_PATH
-    zdaemon -d -p ./$APP_NAME start
+    $ZD -d -p ./$APP_NAME start
 }
 
 stop() {
     cd $APP_PATH
-    zdaemon -d -p ./$APP_NAME stop
+    $ZD -d -p ./$APP_NAME stop
 }
 
 check_status() {
     cd $APP_PATH
-    zdaemon -d -p ./$APP_NAME status
+    $ZD -d -p ./$APP_NAME status
 }
 
 case "$1" in
