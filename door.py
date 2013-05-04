@@ -9,9 +9,11 @@ import subprocess, serial
 from time import sleep
 from octopus import Octopus
 
+lock = "/dev/serial/by-id/usb-Prolific_Technology_Inc._USB-Serial_Controller-if00-port0"
+
 class Door:
     def __init__(self, seconds=5):
-        self.lock = "/dev/serial/by-id/usb-Prolific_Technology_Inc._USB-Serial_Controller-if00-port0"
+        self.lock = lock
         self.seconds = seconds
 
     def open(self):

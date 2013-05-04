@@ -9,9 +9,10 @@ import os, re, subprocess, serial, signal, sys
 from hashlib import sha256 as hashfun
 from time import sleep
 
+reader ="/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0"
+
 class Octopus:
     def __init__(self, userfilename, baudrate=9600):
-        reader ="/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0"
         self.ser = serial.Serial(reader, baudrate)
         self.userfilename = userfilename
         self.users = read_users()
