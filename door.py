@@ -9,10 +9,6 @@ import subprocess, serial
 from time import sleep
 from octopus import Octopus
 
-octopus_reader ="/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0"
-ser = serial.Serial(octopus_reader, 9600)
-userdata = "users.txt"
-
 class Door:
     def __init__(self, seconds=5):
         self.lock = "/dev/serial/by-id/usb-Prolific_Technology_Inc._USB-Serial_Controller-if00-port0"
