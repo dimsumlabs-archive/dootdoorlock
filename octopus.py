@@ -31,7 +31,6 @@ class Octopus:
         print("Saved users")
 
     def add_user(self):
-        #self.users = self.read_users()
         print("Enter name (lastname firstname) of user to add then press enter.")
         name = raw_input()
         print("Now scan octopus card.")
@@ -47,17 +46,8 @@ class Octopus:
     def read_user(self):
         return hashfun(re.sub("[^0-F]", "", ser.readline())).hexdigest()
 
-    def authfun(self):
+    def __call__(self):
         return self.read_user() in self.users.values()
-
-
-    #def run():
-    #    users = read_users()
-    #    while True:
-    #        key = read_user()
-    #        if key in users.values():
-    #            print("Opening")
-    #            open_door()
 
 if __name__ == "__main__":
     octo = Octopus("users.txt")
