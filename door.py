@@ -5,7 +5,7 @@
 #   to add users: ./door.py add
 #
 from __future__ import print_function
-import subprocess, serial
+import subprocess, serial, sys
 from time import sleep
 from octopus import Octopus
 
@@ -14,10 +14,10 @@ lock = "/dev/serial/by-id/usb-Prolific_Technology_Inc._USB-Serial_Controller-if0
 class Door:
     def __init__(self, seconds=5):
         self.lock = lock
-        self.seconds = 5
+        self.seconds = seconds
 
     def open(self):
-	print("opening...")
+        print("opening...")
         p = subprocess.Popen(["cat", self.lock])
         sleep(self.seconds)
         p.terminate()
@@ -28,7 +28,16 @@ class Door:
             if auth_module():
                 self.open()
 
+    def add_user(self, auth_module):
+        auth_module.add_user()
+
 if __name__ == "__main__":
     door = Door()
     octopus = Octopus("users.txt")
-    door.run(octopus)
+
+    if len(sys.argv) == 2: 
+        if sys.argv[1] == "add":
+            door.add_user(octopus)
+    else:
+        door.run(octopus)
+
