@@ -15,7 +15,7 @@ class Octopus:
     def __init__(self, userfilename, baudrate=9600):
         self.ser = serial.Serial(reader, baudrate)
         self.userfilename = userfilename
-        self.users = read_users()
+        self.users = self.read_users()
 
     def read_users(self):
         users = dict()
@@ -45,10 +45,12 @@ class Octopus:
         save_users()
 
     def read_user(self):
-        return hashfun(re.sub("[^0-F]", "", ser.readline())).hexdigest()
+        return hashfun(re.sub("[^0-F]", "", self.ser.readline())).hexdigest()
 
     def __call__(self):
         return self.read_user() in self.users.values()
 
 if __name__ == "__main__":
     octo = Octopus("users.txt")
+    test = octo()
+    print("testing, output of call is: {0}".format(test))

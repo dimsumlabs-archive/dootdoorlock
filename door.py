@@ -14,10 +14,11 @@ lock = "/dev/serial/by-id/usb-Prolific_Technology_Inc._USB-Serial_Controller-if0
 class Door:
     def __init__(self, seconds=5):
         self.lock = lock
-        self.seconds = seconds
+        self.seconds = 5
 
     def open(self):
-        p = subprocess.Popen(["cat", doorlock])
+	print("opening...")
+        p = subprocess.Popen(["cat", self.lock])
         sleep(self.seconds)
         p.terminate()
 
@@ -29,5 +30,5 @@ class Door:
 
 if __name__ == "__main__":
     door = Door()
-    octopus = Octopus()
+    octopus = Octopus("users.txt")
     door.run(octopus)
