@@ -46,6 +46,9 @@ case $1 in
         closedoor
         doorstatus
         ;;
+    "status")
+        doorstatus
+        ;;
     *)
         usage
         ;;
