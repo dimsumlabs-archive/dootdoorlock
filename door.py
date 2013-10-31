@@ -42,6 +42,8 @@ if __name__ == "__main__":
     if len(sys.argv) == 2: 
         if sys.argv[1] == "add":
             door.add_user(octopus)
+        elif sys.argv[1] == "open":
+            door.open()
     else:
         door.run(octopus)
 
