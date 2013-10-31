@@ -33,6 +33,7 @@ function closedoor {
 
 function usage {
     echo "Usage: $0 {open|close}"
+    echo ""
 }
 
 case $1 in
@@ -51,6 +52,7 @@ case $1 in
         ;;
     *)
         usage
+        doorstatus
         ;;
 esac
 
