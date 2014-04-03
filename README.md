@@ -21,5 +21,6 @@ to add users:
 ./door add
 ```
 
+To announce entrances to Twitter, save the oauth credentials to `./api.cfg`
 
 dependencies: pyserial, zdaemon
