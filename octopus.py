@@ -4,7 +4,7 @@
 #   to run: ./octopus.py
 #
 from __future__ import print_function
-import shutil, json, os, re, subprocess, serial, signal, sys
+import shutil, json, os, re, subprocess, serial, signal, sys, errno
 from hashlib import sha256 as hashfun
 from time import sleep, ctime
 
@@ -23,10 +23,22 @@ class Octopus:
         self.users = self.read_users()
 
     def read_users(self):
-        return json.load(open(self.userfilename))
+        users = {}
+        try:
+            users = json.load(open(self.userfilename))
+        except IOError as error:
+            if error.errno == errno.ENOENT:
+                print("[WARNING] Database is empty. Please add at least one user ASAP!")
+            else:
+                raise error
+        return users
 
     def backup(self):
-        shutil.copy(self.userfilename, "bkp/{0}.txt".format(ctime())) 
+        try:
+            shutil.copy(self.userfilename, "{0}/{1}.txt".format(bkpdir, ctime())) 
+        except IOError as error:
+            if error.errno != errno.ENOENT:
+                raise error
 
     def save_users(self):
         self.backup()
