@@ -30,7 +30,7 @@ class Octopus:
 
     def save_users(self):
         self.backup()
-        json.dump(self.users, open(self.userfilename, 'w'))
+        json.dump(self.users, open(self.userfilename, 'w'), indent=2)
         print("Saved users")
 
     def add_user(self):
@@ -60,6 +60,8 @@ if __name__ == "__main__":
     octo = Octopus("users.txt")
     if sys.argv[1] == "add":
         octo.add_user()
+    elif sys.argv[1] == "rm":
+        octo.rm_user(sys.argv[2])
     else:
         test = octo()
         print("testing, output of call is: {0}".format(test))

@@ -55,6 +55,11 @@ if __name__ == "__main__":
             door.add_user(octopus)
         elif sys.argv[1] == "open":
             door.open()
+
+    elif len(sys.argv) == 3:
+        if sys.argv[1] == "rm":
+            octopus.rm_user(sys.argv[2])
+
     else:
         door.run(octopus)
 
