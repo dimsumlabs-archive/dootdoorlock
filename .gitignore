@@ -1,2 +1,4 @@
-users.txt
-*.pyc
+build/
+dist/
+*.egg-info
+__pycache__/

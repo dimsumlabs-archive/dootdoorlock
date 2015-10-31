@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+import argparse
+import hashlib
+import serial
+import re
+
+from dsldoor import door, rfid_auth
+
+
+READER_CONF = (
+    '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0',  # noqa
+    9600)
+
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description='DSL octopus reader daemon')
+    parser.parse_args()
+
+    conn = serial.Serial(*READER_CONF)
+
+    while True:
+        rfid_hash = hashlib.sha256(re.sub(
+            b'[^0-F]',
+            b'',
+            conn.readline())).hexdigest()
+        if rfid_auth(rfid_hash):
+            door.open()

@@ -1,15 +1,14 @@
 dootdoorlock
 ============
 
-The new doorlock at DSL - William Liang's DOOT from BOOT
+The new doorlock at DSL 2.0
 
-On the pi, copy "doord" to /etc/init.d/
+On the pi, copy "init/doord" to /etc/init.d/
 
 To enable at boot:
 ```
 sudo update-rc.d doord defaults
 ```
-For some reason this does not work. Neither does starting in ```/etc/rc.local```.
 
 daemon control:
 ```
@@ -18,8 +17,5 @@ sudo /etc/init.d/doord {start, stop, restart}
 
 to add users:
 ```
-./door add
+Not yet implemented, use web interface for now
 ```
-
-
-dependencies: pyserial, zdaemon
