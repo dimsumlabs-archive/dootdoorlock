@@ -3,16 +3,15 @@ dootdoorlock
 
 The new doorlock at DSL 2.0
 
-On the pi, copy "init/doord" to /etc/init.d/
 
-To enable at boot:
+Install init scripts as root
 ```
-sudo update-rc.d doord defaults
-```
-
-daemon control:
-```
-sudo /etc/init.d/doord {start, stop, restart}
+cp init/doord /etc/init.d/
+cp init/octopusd /etc/init.d/
+chown root:root /etc/init.d/doord
+chown root:root /etc/init.d/octopusd
+update-rc.d doord defaults
+update-rc.d octopusd defaults
 ```
 
 to add users:
