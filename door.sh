@@ -17,7 +17,7 @@ function doorstatus {
             dshuman="open"
             ;;
         *)
-            dshuman="unkown"
+            dshuman="unknown"
             ;;
     esac
     echo "Door status: $dshuman ($ds)"
@@ -32,11 +32,19 @@ function closedoor {
 }
 
 function usage {
-    echo "Usage: $0 {open|close}"
+    echo "Usage: $0 {open|close|status|openclose}"
     echo ""
 }
 
 case $1 in
+    "openclose")
+        doorstatus
+        opendoor
+        doorstatus
+        sleep 5
+        closedoor
+        doorstatus
+        ;;
     "open")
         doorstatus
         opendoor
