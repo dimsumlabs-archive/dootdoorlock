@@ -1,50 +1,93 @@
-#! /bin/bash
-### BEGIN INIT INFO
-# Provides:          doord
-# Required-Start:    $remote_fs $syslog
-# Required-Stop:     $remote_fs $syslog
-# Default-Start:     2 3 4 5
-# Default-Stop:      0 1 6
-# Short-Description: Simple script to start a program at boot
-# Description:       A simple script from www.stuffaboutcode.com which will start / stop a program a boot / shutdown.
-### END INIT INFO
+#!/usr/bin/env python3
+from threading import Timer
+import select
+import socket
+import os
 
-APP_PATH=/home/pi/door/dootdoorlock
-PYTHON=/usr/local/bin/python3
-APP_NAME=door.py
 
-ZD=/usr/local/bin/zdaemon
+DOOR_PIN = 17
+SOCK_PATH = '/tmp/doord'
 
-start() {
-    cd $APP_PATH
-    $ZD -d -p ./$APP_NAME start
-}
 
-stop() {
-    cd $APP_PATH
-    $ZD -d -p ./$APP_NAME stop
-}
+class Door(object):
 
-check_status() {
-    cd $APP_PATH
-    $ZD -d -p ./$APP_NAME status
-}
+    def __init__(self, open_seconds=5):
+        self.open_seconds = 5
+        # Hack to run cancel without conditionals
+        self.timer = Timer(0, lambda: None)
 
-case "$1" in
-  start)
-        start
-        ;;
-  stop)
-        stop
-        ;;
-  status)
-        check_status
-        ;;
-  restart)
-        stop
-        start
-        ;;
-  *)
+        filename = '/sys/class/gpio/gpio{pin}/value'.format(pin=DOOR_PIN)
+        try:
+            self._fd = open(filename, 'wb', buffering=0)
+            print('Raspi open interface')
+        except FileNotFoundError:
+            self._fd = open('/dev/null', 'wb', buffering=0)
 
-esac
-exit 0
+    def open(self):
+        self._fd.write(b'1')
+
+        self.timer.cancel()
+        self.timer = Timer(self.open_seconds, self.close)
+        self.timer.start()
+
+        print('Opened door')
+
+    def close(self):
+        self._fd.write(b'0')
+        print('Closed door')
+
+
+def events():
+    try:
+        os.unlink(SOCK_PATH)
+    except OSError:
+        if os.path.exists(SOCK_PATH):
+            raise
+
+    server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    server.setblocking(0)
+    server.bind(SOCK_PATH)
+    server.listen(1)
+
+    epoll = select.epoll()
+    epoll.register(server.fileno(), select.EPOLLIN)
+
+    try:
+        connections = {}
+
+        while True:
+            events = epoll.poll(1)
+            for fileno, event in events:
+                if fileno == server.fileno():
+                    conn, addr = server.accept()
+                    conn.setblocking(0)
+                    epoll.register(conn, select.EPOLLIN)
+                    connections[conn.fileno()] = conn
+
+                elif event & select.EPOLLIN:
+                    req = connections[fileno].recv(1024)
+                    if not req:
+                        epoll.unregister(fileno)
+                        connections[fileno].close()
+                        del connections[fileno]
+
+                    evt = req.decode('utf8').rstrip('\r').rstrip('\n').rstrip('\n')
+                    if evt:
+                        yield evt
+
+    finally:
+        epoll.unregister(server.fileno())
+        epoll.close()
+        server.close()
+        os.unlink(SOCK_PATH)
+
+
+if __name__ == '__main__':
+    door = Door()
+    for evt in events():
+
+        if evt == 'OPEN':
+            door.open()
+
+        elif evt == 'CLOSE':
+            door.close()
