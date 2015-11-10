@@ -1,15 +1,51 @@
 #!/usr/bin/env python3
+from urllib.error import HTTPError, URLError
+import urllib.request
+import urllib.parse
 import argparse
 import hashlib
 import serial
+import os.path
 import re
+import sys
 
-from dsldoor import door, rfid_auth
+from dsldoor import door
 
 
+TMP_FILE = '/tmp/octopusd'
 READER_CONF = (
     '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0',  # noqa
     9600)
+
+
+def rfid_auth(rfid_hash):
+    params = urllib.parse.urlencode({'rfid': rfid_hash})
+    try:
+        r = urllib.request.urlopen('?'.join((
+            'http://localhost/api.php', params)))
+    except (HTTPError, URLError):
+        return False
+    else:
+        if r.status == 200:
+            return True
+    return False
+
+
+def write_file(rfid_hash):
+    try:
+        os.unlink(TMP_FILE)
+    except OSError:
+        if os.path.exists(TMP_FILE):
+            raise
+
+    with open(TMP_FILE, 'w') as f:
+        f.write(rfid_hash)
+
+    try:
+        os.chmod(TMP_FILE, 0o777)
+    except OSError:
+        sys.stderr.write('Cannot set permissions, not running as root?')
+        raise
 
 
 if __name__ == '__main__':
@@ -24,5 +60,11 @@ if __name__ == '__main__':
             b'[^0-F]',
             b'',
             conn.readline())).hexdigest()
+
+        try:
+            write_file(rfid_hash)
+        except Exception as e:
+            print(e)
+
         if rfid_auth(rfid_hash):
             door.open()

@@ -1,6 +1,3 @@
-from urllib.error import HTTPError, URLError
-import urllib.request
-import urllib.parse
 import socket
 import sys
 
@@ -43,16 +40,3 @@ class door(object):
     @staticmethod
     def close():
         _wrap_send(b'CLOSE')
-
-
-def rfid_auth(rfid_hash):
-    params = urllib.parse.urlencode({'rfid': rfid_hash})
-    try:
-        r = urllib.request.urlopen('?'.join((
-            'http://localhost/api.php', params)))
-    except (HTTPError, URLError):
-        return False
-    else:
-        if r.status == 200:
-            return True
-    return False

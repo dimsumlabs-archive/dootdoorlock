@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
 import argparse
+import time
+import os
 
 from dsldoor import door
+
+
+TMP_FILE = '/tmp/octopusd'
 
 
 def arg_parser():
     parser = argparse.ArgumentParser(description='DSL door control utility')
     commands = parser.add_subparsers(help='Subcommand', dest='command')
 
-    commands.add_parser("user_add")
-    commands.add_parser("user_remove")
+    commands.add_parser("rfid_last")
     commands.add_parser("door_open")
     commands.add_parser("door_close")
 
@@ -20,11 +24,18 @@ if __name__ == '__main__':
     parser = arg_parser()
     args = parser.parse_args()
 
-    if args.command == 'user_add':
-        raise NotImplementedError()
-
-    elif args.command == 'user_remove':
-        raise NotImplementedError()
+    if args.command == 'rfid_last':
+        while True:
+            try:
+                with open(TMP_FILE) as f:
+                    print(f.read())
+                    break
+            except OSError:
+                time.sleep(0.1)
+        try:
+            os.unlink(TMP_FILE)
+        except OSError:
+            pass
 
     elif args.command == 'door_open':
         door.open()
