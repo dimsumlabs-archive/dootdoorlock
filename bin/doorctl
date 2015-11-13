@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 import argparse
-import time
-import os
+import zmq
 
-from dsldoor import door
+from dsldoor import door, create_client_socket
 
 
-TMP_FILE = '/tmp/octopusd'
+OCTOPUSD_SOCK_PATH = '/tmp/octopusd'
 
 
 def arg_parser():
@@ -25,17 +24,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.command == 'rfid_last':
-        while True:
-            try:
-                with open(TMP_FILE) as f:
-                    print(f.read())
-                    break
-            except OSError:
-                time.sleep(0.1)
-        try:
-            os.unlink(TMP_FILE)
-        except OSError:
-            pass
+        _, socket = create_client_socket(
+            sock_path=OCTOPUSD_SOCK_PATH,
+            socket_type=zmq.SUB)
+        socket.setsockopt(zmq.SUBSCRIBE, b'rfid_last')
+        _, rfid_hash = socket.recv_multipart()
+        print(rfid_hash.decode('utf8'))
 
     elif args.command == 'door_open':
         door.open()

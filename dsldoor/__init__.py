@@ -1,34 +1,49 @@
-import socket
+import time
+import zmq
 import sys
+import os
 
-__all__ = ['door', 'rfid_auth']
+__all__ = ['door']
+
 
 SOCK_PATH = '/tmp/doord'
 
 
-def _sock():
-    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+def create_server_socket(ctx=None, sock_path=None, socket_type=zmq.SUB):
     try:
-        s.connect(SOCK_PATH)
-    except socket.error as e:
-        if e.errno == 2:
-            sys.stderr.write('Socket not found, is doord running?')
-            s.close()
-        else:
+        os.unlink(sock_path)
+    except OSError:
+        if os.path.exists(sock_path):
             raise
-    else:
-        return s
+
+    with open(sock_path, 'a'):
+        os.utime(sock_path, None)
+
+    try:
+        os.chown(sock_path, -1, 1005)
+        os.chmod(sock_path, 0o770)
+    except OSError:
+        sys.stderr.write('Cannot set socket permissions, not running as root?')
+        raise
+
+    ctx = ctx or zmq.Context()
+    socket = ctx.socket(socket_type)
+    socket.bind('ipc://{sock_path}'.format(sock_path=sock_path))
+
+    return ctx, socket
+
+
+def create_client_socket(ctx=None, sock_path=None, socket_type=zmq.PUB):
+    ctx = ctx or zmq.Context()
+    socket = ctx.socket(socket_type)
+    socket.connect('ipc://{sock_path}'.format(sock_path=sock_path))
+    return ctx, socket
 
 
 def _wrap_send(command):
-    s = _sock()
-    if s is None:
-        return
-
-    try:
-        s.send(command)
-    finally:
-        s.close()
+    _, socket = create_client_socket(sock_path=SOCK_PATH)
+    time.sleep(0.1)
+    socket.send(command)
 
 
 class door(object):

@@ -5,14 +5,13 @@ import urllib.parse
 import argparse
 import hashlib
 import serial
-import os.path
+import zmq
 import re
-import sys
 
-from dsldoor import door
+from dsldoor import door, create_server_socket
 
 
-TMP_FILE = '/tmp/octopusd'
+SOCK_PATH = '/tmp/octopusd'
 READER_CONF = (
     '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0',  # noqa
     9600)
@@ -31,23 +30,6 @@ def rfid_auth(rfid_hash):
     return False
 
 
-def write_file(rfid_hash):
-    try:
-        os.unlink(TMP_FILE)
-    except OSError:
-        if os.path.exists(TMP_FILE):
-            raise
-
-    with open(TMP_FILE, 'w') as f:
-        f.write(rfid_hash)
-
-    try:
-        os.chmod(TMP_FILE, 0o777)
-    except OSError:
-        sys.stderr.write('Cannot set permissions, not running as root?')
-        raise
-
-
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='DSL octopus reader daemon')
@@ -55,16 +37,15 @@ if __name__ == '__main__':
 
     conn = serial.Serial(*READER_CONF)
 
+    _, socket = create_server_socket(sock_path=SOCK_PATH, socket_type=zmq.PUB)
+
     while True:
         rfid_hash = hashlib.sha256(re.sub(
             b'[^0-F]',
             b'',
             conn.readline())).hexdigest()
 
-        try:
-            write_file(rfid_hash)
-        except Exception as e:
-            print(e)
+        socket.send_multipart((b'rfid_last', rfid_hash.encode('utf8')))
 
         if rfid_auth(rfid_hash):
             door.open()

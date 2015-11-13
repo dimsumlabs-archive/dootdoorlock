@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 from threading import Timer
+from dsldoor import create_server_socket
 import argparse
-import select
-import socket
-import sys
-import os
+import zmq
 
 
 DOOR_PIN = 17
@@ -42,66 +40,19 @@ class Door(object):
         print('Closed door')
 
 
-def events():
-    try:
-        os.unlink(SOCK_PATH)
-    except OSError:
-        if os.path.exists(SOCK_PATH):
-            raise
-
-    server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    server.setblocking(0)
-    server.bind(SOCK_PATH)
-    server.listen(1)
-
-    try:
-        os.chown(SOCK_PATH, -1, 1005)
-        os.chmod(SOCK_PATH, 0o770)
-    except OSError:
-        sys.stderr.write('Cannot set socket permissions, not running as root?')
-        raise
-
-    epoll = select.epoll()
-    epoll.register(server.fileno(), select.EPOLLIN)
-
-    try:
-        connections = {}
-
-        while True:
-            events = epoll.poll(1)
-            for fileno, event in events:
-                if fileno == server.fileno():
-                    conn, addr = server.accept()
-                    conn.setblocking(0)
-                    epoll.register(conn, select.EPOLLIN)
-                    connections[conn.fileno()] = conn
-
-                elif event & select.EPOLLIN:
-                    req = connections[fileno].recv(1024)
-                    if not req:
-                        epoll.unregister(fileno)
-                        connections[fileno].close()
-                        del connections[fileno]
-
-                    evt = req.decode('utf8').rstrip('\r')
-                    evt = evt.rstrip('\n').rstrip('\n')
-                    if evt:
-                        yield evt
-
-    finally:
-        epoll.unregister(server.fileno())
-        epoll.close()
-        server.close()
-        os.unlink(SOCK_PATH)
-
-
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='DSL door opening daemon')
     parser.parse_args()
 
+    ctx, socket = create_server_socket(sock_path=SOCK_PATH)
+    socket.setsockopt(zmq.SUBSCRIBE, b'OPEN')
+    socket.setsockopt(zmq.SUBSCRIBE, b'CLOSE')
+
     door = Door()
-    for evt in events():
+
+    while True:
+        evt = socket.recv().decode('utf8')
 
         if evt == 'OPEN':
             door.open()
