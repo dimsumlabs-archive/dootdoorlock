@@ -16,18 +16,21 @@ class Door(object):
         # Hack to run cancel without conditionals
         self.timer = Timer(0, lambda: None)
 
+    @property
+    def _fd(self):
         filename = '/sys/class/gpio/gpio{pin}/value'.format(pin=DOOR_PIN)
         try:
-            self._fd = open(filename, 'wb', buffering=0)
             print('Raspi open interface')
+            return open(filename, 'wb', buffering=0)
         except IOError as e:
             if e.errno == 2:
-                self._fd = open('/dev/null', 'wb', buffering=0)
+                return open('/dev/null', 'wb', buffering=0)
             else:
                 raise
 
     def open(self):
-        self._fd.write(b'1')
+        with self._fd as fd:
+            fd.write(b'1')
 
         self.timer.cancel()
         self.timer = Timer(self.open_seconds, self.close)
@@ -36,7 +39,8 @@ class Door(object):
         print('Opened door')
 
     def close(self):
-        self._fd.write(b'0')
+        with self._fd as fd:
+            fd.write(b'0')
         print('Closed door')
 
 
