@@ -6,7 +6,6 @@ import argparse
 import hashlib
 import serial
 import zmq
-import re
 
 from dsldoor import door, create_server_socket
 
@@ -15,6 +14,9 @@ SOCK_PATH = '/tmp/octopusd'
 READER_CONF = (
     '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0',  # noqa
     9600)
+READER_KW = {
+    'timeout': 0.5
+}
 
 
 def rfid_auth(rfid_hash):
@@ -35,15 +37,18 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='DSL octopus reader daemon')
     parser.parse_args()
 
-    conn = serial.Serial(*READER_CONF)
+    conn = serial.Serial(*READER_CONF, **READER_KW)
 
     _, socket = create_server_socket(sock_path=SOCK_PATH, socket_type=zmq.PUB)
 
     while True:
-        rfid_hash = hashlib.sha256(re.sub(
-            b'[^0-F]',
-            b'',
-            conn.readline())).hexdigest()
+        card = conn.read(10)
+        if not card:
+            continue
+
+        card = card[0:len(card)-1]  # Skip checksum byte
+        card = bytes(reversed(card))  # Correct endianness
+        rfid_hash = hashlib.sha256(card)
 
         socket.send_multipart((b'rfid_last', rfid_hash.encode('utf8')))
 
