@@ -1,4 +1,9 @@
 from setuptools import setup, find_packages
+import sys
+
+
+if sys.version_info.major <= 2:
+    raise RuntimeError('No python2 support')
 
 
 setup(
