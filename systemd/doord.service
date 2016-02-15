@@ -1,0 +1,8 @@
+[Unit]
+Description=Door daemon
+
+[Service]
+ExecStart=/usr/local/bin/doord
+
+[Install]
+WantedBy=multi-user.target

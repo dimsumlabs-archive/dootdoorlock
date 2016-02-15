@@ -1,0 +1,10 @@
+[Unit]
+Description=Octopus reader daemon
+After=doord.service
+Requires=doord.service
+
+[Service]
+ExecStart=/usr/local/bin/octopusd
+
+[Install]
+WantedBy=multi-user.target
