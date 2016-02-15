@@ -17,7 +17,6 @@ setup(
     scripts = [
         'bin/doorctl',
         'bin/doord',
-        'bin/door.sh',
         'bin/octopusd'
     ]
 )
