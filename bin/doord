@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 from threading import Timer
-from dsldoor import create_server_socket
+import RPi.GPIO as GPIO
 import argparse
 import zmq
+
+from dsldoor import create_server_socket
 
 
 DOOR_PIN = 17
@@ -12,35 +14,22 @@ SOCK_PATH = '/tmp/doord'
 class Door(object):
 
     def __init__(self, open_seconds=5):
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(DOOR_PIN, GPIO.OUT)
+
         self.open_seconds = 5
         # Hack to run cancel without conditionals
         self.timer = Timer(0, lambda: None)
 
-    @property
-    def _fd(self):
-        filename = '/sys/class/gpio/gpio{pin}/value'.format(pin=DOOR_PIN)
-        try:
-            print('Raspi open interface')
-            return open(filename, 'wb', buffering=0)
-        except IOError as e:
-            if e.errno == 2:
-                return open('/dev/null', 'wb', buffering=0)
-            else:
-                raise
-
     def open(self):
-        with self._fd as fd:
-            fd.write(b'1')
+        GPIO.output(DOOR_PIN, True)
 
         self.timer.cancel()
         self.timer = Timer(self.open_seconds, self.close)
         self.timer.start()
 
-        print('Opened door')
-
     def close(self):
-        with self._fd as fd:
-            fd.write(b'0')
+        GPIO.output(DOOR_PIN, False)
         print('Closed door')
 
 
