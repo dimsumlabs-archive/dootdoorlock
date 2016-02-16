@@ -6,6 +6,7 @@ import argparse
 import hashlib
 import serial
 import zmq
+import os
 
 from dsldoor import door, create_server_socket
 
