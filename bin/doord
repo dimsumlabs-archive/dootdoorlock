@@ -8,7 +8,7 @@ from dsldoor import create_server_socket
 
 
 DOOR_PIN = 17
-SOCK_PATH = '/tmp/doord'
+SOCK_PATH = 'tcp://127.0.0.1:9000'
 
 
 class Door(object):

@@ -5,7 +5,7 @@ import zmq
 from dsldoor import door, create_client_socket
 
 
-OCTOPUSD_SOCK_PATH = '/tmp/octopusd'
+OCTOPUSD_SOCK_PATH = 'tcp://127.0.0.1:9001'
 
 
 def arg_parser():

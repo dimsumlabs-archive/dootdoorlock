@@ -10,7 +10,7 @@ import zmq
 from dsldoor import door, create_server_socket
 
 
-SOCK_PATH = '/tmp/octopusd'
+SOCK_PATH = 'tcp://127.0.0.1:9001'
 READER_CONF = (
     '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0',  # noqa
     9600)

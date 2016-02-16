@@ -6,29 +6,13 @@ import os
 __all__ = ['door']
 
 
-SOCK_PATH = '/tmp/doord'
+SOCK_PATH = 'tcp://127.0.0.1:9000'
 
 
 def create_server_socket(ctx=None, sock_path=None, socket_type=zmq.SUB):
-    try:
-        os.unlink(sock_path)
-    except OSError:
-        if os.path.exists(sock_path):
-            raise
-
-    with open(sock_path, 'a'):
-        os.utime(sock_path, None)
-
-    try:
-        os.chown(sock_path, -1, 1005)
-        os.chmod(sock_path, 0o770)
-    except OSError:
-        sys.stderr.write('Cannot set socket permissions, not running as root?')
-        raise
-
     ctx = ctx or zmq.Context()
     socket = ctx.socket(socket_type)
-    socket.bind('ipc://{sock_path}'.format(sock_path=sock_path))
+    socket.bind('{sock_path}'.format(sock_path=sock_path))
 
     return ctx, socket
 
@@ -36,7 +20,7 @@ def create_server_socket(ctx=None, sock_path=None, socket_type=zmq.SUB):
 def create_client_socket(ctx=None, sock_path=None, socket_type=zmq.PUB):
     ctx = ctx or zmq.Context()
     socket = ctx.socket(socket_type)
-    socket.connect('ipc://{sock_path}'.format(sock_path=sock_path))
+    socket.connect('{sock_path}'.format(sock_path=sock_path))
     return ctx, socket
 
 
