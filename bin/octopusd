@@ -49,6 +49,9 @@ if __name__ == '__main__':
         card = card[0:len(card)-1]  # Skip checksum byte
         card = bytes(reversed(card))  # Correct endianness
         rfid_hash = hashlib.sha256(card).hexdigest()
+        rfid_hash = hashlib.sha256(b''.join((  # Double hash with salt
+            hashlib.sha256(card).hexdigest().encode('ascii'),
+            os.environ['HASH_SALT'].encode('ascii')))).hexdigest()
 
         socket.send_multipart((b'rfid_last', rfid_hash.encode('utf8')))
 
