@@ -5,6 +5,7 @@ Requires=doord.service
 
 [Service]
 ExecStart=/usr/local/bin/octopusd
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
